@@ -1,5 +1,4 @@
-require 'mobility/backends/active_record/pg_hash'
-require 'mobility/arel/nodes/pg_ops'
+require 'mobility/backends/active_record/db_hash'
 
 module Mobility
   module Backends
@@ -11,7 +10,7 @@ Implements the {Mobility::Backends::Hstore} backend for ActiveRecord models.
 
 =end
     module ActiveRecord
-      class Hstore < PgHash
+      class Hstore < DbHash
         # @!group Backend Accessors
         # @!macro backend_reader
         # @!method read(locale, options = {})
