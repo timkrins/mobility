@@ -1,1 +1,1 @@
-[![Build Status](https://travis-ci.com/timkrins/mobility.svg?branch=master)][travis]
+![Build Status](https://travis-ci.com/timkrins/mobility.svg?branch=master)
