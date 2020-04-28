@@ -5,13 +5,9 @@ module Mobility
   module Arel
     module Nodes
       %w[
-        JsonDashArrow
-        JsonDashDoubleArrow
         JsonbDashArrow
         JsonbDashDoubleArrow
         JsonbQuestion
-        HstoreDashArrow
-        HstoreQuestion
       ].each do |name|
         const_set name, (Class.new(Binary) do
           include ::Arel::Predications
@@ -27,11 +23,9 @@ module Mobility
 
       # Needed for AR 4.2, can be removed when support is deprecated
       if ::ActiveRecord::VERSION::STRING < '5.0'
-        [JsonbDashDoubleArrow, HstoreDashArrow].each do |klass|
-          klass.class_eval do
-            def quoted_node other
-              other && super
-            end
+        JsonbDashDoubleArrow.class_eval do
+          def quoted_node other
+            other && super
           end
         end
       end
@@ -61,24 +55,6 @@ module Mobility
         end
       end
 
-      class Hstore < HstoreDashArrow
-        def to_question
-          HstoreQuestion.new left, right
-        end
-
-        def eq other
-          other.nil? ? to_question.not : super
-        end
-      end
-
-      class Json < JsonDashDoubleArrow; end
-
-      class JsonContainer < Json
-        def initialize column, locale, attr
-          super(Arel::Nodes::JsonDashArrow.new(column, locale), attr)
-        end
-      end
-
       class JsonbContainer < Jsonb
         def initialize column, locale, attr
           @column, @locale = column, locale
@@ -92,14 +68,6 @@ module Mobility
     end
 
     module Visitors
-      def visit_Mobility_Arel_Nodes_JsonDashArrow o, a
-        json_infix o, a, '->'
-      end
-
-      def visit_Mobility_Arel_Nodes_JsonDashDoubleArrow o, a
-        json_infix o, a, '->>'
-      end
-
       def visit_Mobility_Arel_Nodes_JsonbDashArrow o, a
         json_infix o, a, '->'
       end
@@ -109,14 +77,6 @@ module Mobility
       end
 
       def visit_Mobility_Arel_Nodes_JsonbQuestion o, a
-        json_infix o, a, '?'
-      end
-
-      def visit_Mobility_Arel_Nodes_HstoreDashArrow o, a
-        json_infix o, a, '->'
-      end
-
-      def visit_Mobility_Arel_Nodes_HstoreQuestion o, a
         json_infix o, a, '?'
       end
 
