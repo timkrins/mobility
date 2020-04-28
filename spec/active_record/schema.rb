@@ -99,6 +99,12 @@ module Mobility
               t.boolean :published
               t.timestamps null: false
             end
+
+            create_table "container_posts" do |t|
+              t.json :translations
+              t.boolean :published
+              t.timestamps null: false
+            end
           end
 
           if ENV['DB'] == 'postgres'
