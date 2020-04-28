@@ -1,4 +1,5 @@
 require 'mobility/backends/active_record/db_hash'
+require "mobility/arel/nodes/jsonb"
 
 module Mobility
   module Backends
