@@ -11,8 +11,6 @@ env:
   - DB=mysql ORM=active_record RAILS_VERSION=5.2
   - DB=postgres ORM=active_record RAILS_VERSION=6.0
   - DB=mysql ORM=active_record RAILS_VERSION=6.0
-  - DB=postgres ORM=sequel SEQUEL_VERSION=4
-  - DB=mysql ORM=sequel SEQUEL_VERSION=4
   - DB=postgres ORM=sequel SEQUEL_VERSION=5
   - DB=mysql ORM=sequel SEQUEL_VERSION=5
   - DB=sqlite3 ORM=sequel SEQUEL_VERSION=5
