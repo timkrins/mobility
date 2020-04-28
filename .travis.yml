@@ -18,6 +18,8 @@ env:
   - DB=sqlite3 ORM= I18N_FALLBACKS=true
 matrix:
   fast_finish: true
+  exclude:
+    - env: DB=sqlite3 ORM= TEST_PERFORMANCE=true
 
 before_script:
   - bundle exec rake db:create db:up
