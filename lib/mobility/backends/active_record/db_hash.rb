@@ -6,12 +6,12 @@ module Mobility
   module Backends
 =begin
 
-Internal class used by ActiveRecord backends backed by a Postgres data type
+Internal class used by ActiveRecord backends backed by a Hash data type
 (hstore, jsonb).
 
 =end
     module ActiveRecord
-      class PgHash
+      class DbHash
         include ActiveRecord
         include HashValued
 
@@ -45,7 +45,7 @@ Internal class used by ActiveRecord backends backed by a Postgres data type
           end
         end
       end
-      private_constant :PgHash
+      private_constant :DbHash
     end
   end
 end

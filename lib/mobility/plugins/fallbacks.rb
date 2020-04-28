@@ -125,6 +125,38 @@ the current locale was +nil+.
     module Fallbacks
       extend Plugin
 
+      class << self
+        # @!group Fallbacks Overrides
+        # @return [Symbol] Mobility fallbacks
+        def fallbacks_override
+          read_fallbacks_override
+        end
+
+        # Sets Mobility Fallbacks around block
+        # @param [Symbol] override Fallbacks to set in block
+        # @yield [Symbol] Fallbacks
+        def with_fallbacks(override)
+          previous_fallbacks_override = read_fallbacks_override
+          begin
+            set_fallbacks_override(override)
+            yield(override)
+          ensure
+            set_fallbacks_override(previous_fallbacks_override)
+          end
+        end
+        # @!endgroup
+
+        protected
+
+        def read_fallbacks_override
+          Mobility.storage[:fallbacks_override]
+        end
+
+        def set_fallbacks_override(fallbacks_override)
+          Mobility.storage[:fallbacks_override] = fallbacks_override
+        end
+      end
+
       # Applies fallbacks plugin to attributes. Completely disables fallbacks
       # on model if option is +false+.
       included_hook do |_, backend_class|
@@ -142,8 +174,15 @@ the current locale was +nil+.
         def define_read(fallbacks)
           define_method :read do |locale, fallback: true, **options|
             return super(locale, **options) if !fallback || options[:locale]
+            override = Fallbacks.fallbacks_override
 
-            locales = fallback == true ? fallbacks[locale] : [locale, *fallback]
+            locales =
+              if override.nil?
+                fallback == true ? fallbacks[locale] : [locale, *fallback]
+              else
+                [locale, *override]
+              end
+
             locales.each do |fallback_locale|
               value = super(fallback_locale, **options)
               return value if Util.present?(value)
