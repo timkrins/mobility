@@ -9,12 +9,12 @@ module Mobility
   module Backends
 =begin
 
-Internal class used by Sequel backends backed by a Postgres data type (hstore,
+Internal class used by Sequel backends backed by a Hash data type (hstore,
 jsonb).
 
 =end
     module Sequel
-      class PgHash
+      class DbHash
         include Sequel
         include HashValued
 
@@ -54,7 +54,7 @@ jsonb).
           columns.each { |column| default_values[column] = {} }
         end
       end
-      private_constant :PgHash
+      private_constant :DbHash
     end
   end
 end
