@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "mobility/backends/active_record"
-require "mobility/arel/nodes/pg_ops"
+require "mobility/arel/nodes/json"
+require "mobility/arel/nodes/jsonb"
 
 module Mobility
   module Backends
