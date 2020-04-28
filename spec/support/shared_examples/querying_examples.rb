@@ -541,8 +541,15 @@ shared_examples_for "AR Model with translated scope" do |model_class_name, a1=:t
         it "includes partial string matches" do
           foobar = model_class.create(a1 => "foObar")
           barfoo = model_class.create(a1 => "barfOo")
-          expect(query { __send__(a1).matches("foo%") }).to match_array([i[0], *i[5..6], foobar])
-          expect(query { __send__(a1).matches("%foo") }).to match_array([i[0], *i[5..6], barfoo])
+
+          if [:json].include?(backend_name) && ENV['DB'] == 'mysql'
+            # MySQL JSON query is case-sensitive
+            expect(query { __send__(a1).matches("foo%") }).to match_array([i[0], *i[5..6]])
+            expect(query { __send__(a1).matches("%foo") }).to match_array([i[0], *i[5..6]])
+          else
+            expect(query { __send__(a1).matches("foo%") }).to match_array([i[0], *i[5..6], foobar])
+            expect(query { __send__(a1).matches("%foo") }).to match_array([i[0], *i[5..6], barfoo])
+          end
         end
 
         if ENV['DB'] == 'postgres' && ::ActiveRecord::VERSION::STRING >= '5.0'
