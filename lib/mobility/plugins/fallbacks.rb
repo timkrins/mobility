@@ -32,6 +32,9 @@ French translation if the value in the current locale was +nil+, whereas
 <tt>fallback: [:fr, :es]</tt> would try French, then Spanish if the value in
 the current locale was +nil+.
 
+Wrapping with<tt>Mobility::Plugins::Fallbacks.with_fallbacks_override(+fallbacks+) { ... }</tt>
+will override the value of the default fallbacks for the entire block.
+
 @see https://github.com/svenfuchs/i18n/wiki/Fallbacks I18n Fallbacks
 
 @example With default fallbacks enabled (falls through to default locale)
@@ -88,6 +91,25 @@ the current locale was +nil+.
   post.title(fallback: :fr)
   #=> "Mobilité"
 
+@example Overriding fallbacks around a block
+  class Post
+    extend Mobility
+    translates :title, fallbacks: true
+  end
+
+  I18n.default_locale = :en
+  Mobility.locale = :en
+  post = Post.new(title: "Mobility")
+  Mobility.with_locale(:fr) { post.title = "Mobilité" }
+
+  Mobility.locale = :ja
+  post.title
+  #=> "Mobility"
+  post.title(fallback: false)
+  #=> nil
+  Mobility::Plugins::Fallbacks.with_fallbacks_override(:fr) { post.title }
+  #=> "Mobilité"
+
 @example Fallbacks disabled
   class Post
     extend Mobility
@@ -113,6 +135,43 @@ the current locale was +nil+.
 
       default true
       requires :backend, include: :before
+
+      class << self
+        # @!group Overridden fallbacks
+        # @return [String,Symbol,Boolean,Array<Symbol>] Fallbacks
+        def fallbacks_override
+          read_fallbacks_override
+        end
+
+        # Override fallbacks around block
+        # @param [String,Symbol,Boolean,Array<Symbol>] Fallbacks to set in block
+        # @yield [String,Symbol,Boolean,Array<Symbol>] Fallbacks
+        def with_fallbacks_override(fallbacks_override)
+          previous_fallbacks_override = read_fallbacks_override
+          begin
+            set_fallbacks_override(fallbacks_override)
+            yield(fallbacks_override)
+          ensure
+            set_fallbacks_override(previous_fallbacks_override)
+          end
+        end
+        # @!endgroup
+
+        # @return [RequestStore] Request store
+        def storage
+          RequestStore.store
+        end
+
+        protected
+
+        def read_fallbacks_override
+          storage[:mobility_fallbacks_override]
+        end
+
+        def set_fallbacks_override(fallbacks_override)
+          storage[:mobility_fallbacks_override] = fallbacks_override
+        end
+      end
 
       # Applies fallbacks plugin to attributes. Completely disables fallbacks
       # on model if option is +false+.
@@ -151,13 +210,26 @@ the current locale was +nil+.
         def read(locale, fallback: true, **kwargs)
           return super(locale, **kwargs) if !fallback || kwargs[:locale]
 
-          locales = fallback == true ? self.class.fallbacks[locale] : [locale, *fallback]
-          locales.each do |fallback_locale|
+          mobility_fallback_locales(locale, fallback).each do |fallback_locale|
             value = super(fallback_locale, **kwargs)
             return value if Util.present?(value)
           end
 
           super(locale, **kwargs)
+        end
+
+        private
+
+        def mobility_fallback_locales(locale, fallback)
+          return [locale, *fallback] unless fallback == true
+
+          if Fallbacks.fallbacks_override
+            return self.class.fallbacks[locale] if Fallbacks.fallbacks_override == true
+
+            return [locale, *Fallbacks.fallbacks_override]
+          end
+
+          self.class.fallbacks[locale]
         end
       end
     end
