@@ -54,11 +54,25 @@ describe Mobility::Plugins::Fallbacks, type: :plugin do
       expect(backend.read(:'en-US', fallback: :ja)).to eq("ja val")
     end
 
+    it "uses locale passed in to with_fallbacks_override as value of fallback option when present" do
+      expect(listener).to receive(:read).exactly(2).times do |locale|
+        { :'en-US' => '', :ja => 'ja val' }.fetch(locale)
+      end
+      expect(Mobility::Plugins::Fallbacks.with_fallbacks_override(:ja) { backend.read(:'en-US') }).to eq("ja val")
+    end
+
     it "uses array of locales passed in as value of fallback options when present" do
       expect(listener).to receive(:read).exactly(2).times do |locale|
         { :'en-US' => '', :pl => 'pl val', :'de-DE' => 'de val' }.fetch(locale)
       end
       expect(backend.read(:"en-US", fallback: [:pl, :'de-DE'])).to eq("pl val")
+    end
+
+    it "uses array of locales passed to with_fallbacks_override as value of fallback options when present" do
+      expect(listener).to receive(:read).exactly(2).times do |locale|
+        { :'en-US' => '', :pl => 'pl val', :'de-DE' => 'de val' }.fetch(locale)
+      end
+      expect(Mobility::Plugins::Fallbacks.with_fallbacks_override([:pl, :'de-DE']) { backend.read(:"en-US") }).to eq("pl val")
     end
 
     it "passes options to getter in fallback locale" do
@@ -112,6 +126,13 @@ describe Mobility::Plugins::Fallbacks, type: :plugin do
       expect(backend.read(:"en-US", fallback: :ja)).to eq('ja val')
     end
 
+    it "uses locale passed to with_fallbacks_override as value of fallback option when present" do
+      allow(listener).to receive(:read) do |locale|
+        { :'en-US' => '', :en => '', :ja => 'ja val' }.fetch(locale)
+      end
+      expect(Mobility::Plugins::Fallbacks.with_fallbacks_override(:ja) { backend.read(:"en-US") }).to eq('ja val')
+    end
+
     it "uses array of locales passed in as value of fallback options when present" do
       expect(listener).to receive(:read).exactly(4).times do |locale|
         { :'en-US' => '', :pl => 'pl val', :'de-DE' => 'de val' }.fetch(locale)
@@ -120,9 +141,22 @@ describe Mobility::Plugins::Fallbacks, type: :plugin do
       expect(backend.read(:'en-US', fallback: [:'de-DE', :pl])).to eq('de val')
     end
 
+    it "uses array of locales passed to with_fallbacks_override as value of fallback options when present" do
+      expect(listener).to receive(:read).exactly(4).times do |locale|
+        { :'en-US' => '', :pl => 'pl val', :'de-DE' => 'de val' }.fetch(locale)
+      end
+      expect(Mobility::Plugins::Fallbacks.with_fallbacks_override([:pl, :'de-DE']) { backend.read(:'en-US') }).to eq('pl val')
+      expect(Mobility::Plugins::Fallbacks.with_fallbacks_override([:'de-DE', :pl]) { backend.read(:'en-US') }).to eq('de val')
+    end
+
     it "does not use fallbacks when fallback: true option is passed" do
       expect(listener).to receive(:read).once.with(:'en-US', any_args).and_return(nil)
       expect(backend.read(:'en-US', fallback: true)).to eq(nil)
+    end
+
+    it "does not use fallbacks when fallback: true option is passed to with_fallbacks_override" do
+      expect(listener).to receive(:read).once.with(:'en-US', any_args).and_return(nil)
+      expect(Mobility::Plugins::Fallbacks.with_fallbacks_override(true) { backend.read(:'en-US') }).to eq(nil)
     end
   end
 
