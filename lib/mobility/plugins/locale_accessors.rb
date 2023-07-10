@@ -41,18 +41,18 @@ available locales for a Rails application) will be used by default.
         normalized_locale = Mobility.normalize_locale(locale)
 
         module_eval <<-EOM, __FILE__, __LINE__ + 1
-        def #{name}_#{normalized_locale}(options = {})
-          return super() if options.delete(:super)
-          warn "#{warning_message}" if options[:locale]
-          #{name}(**options, locale: #{locale.inspect})
+        def #{name}_#{normalized_locale}(**kwargs)
+          return super() if kwargs.delete(:super)
+          warn "#{warning_message}" if kwargs[:locale]
+          #{name}(**kwargs, locale: #{locale.inspect})
         end
         EOM
 
         module_eval <<-EOM, __FILE__, __LINE__ + 1
-        def #{name}_#{normalized_locale}?(options = {})
-          return super() if options.delete(:super)
-          warn "#{warning_message}" if options[:locale]
-          #{name}?(**options, locale: #{locale.inspect})
+        def #{name}_#{normalized_locale}?(**kwargs)
+          return super() if kwargs.delete(:super)
+          warn "#{warning_message}" if kwargs[:locale]
+          #{name}?(**kwargs, locale: #{locale.inspect})
         end
         EOM
       end
@@ -62,10 +62,10 @@ available locales for a Rails application) will be used by default.
         normalized_locale = Mobility.normalize_locale(locale)
 
         module_eval <<-EOM, __FILE__, __LINE__ + 1
-        def #{name}_#{normalized_locale}=(value, options = {})
-          return super(value) if options.delete(:super)
-          warn "#{warning_message}" if options[:locale]
-          public_send(:#{name}=, value, **options, locale: #{locale.inspect})
+        def #{name}_#{normalized_locale}=(value, **kwargs)
+          return super(value) if kwargs.delete(:super)
+          warn "#{warning_message}" if kwargs[:locale]
+          public_send(:#{name}=, value, **kwargs, locale: #{locale.inspect})
         end
         EOM
       end
